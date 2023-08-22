@@ -19,6 +19,8 @@ void Game::Init(HWND hWnd)
 
 	// TODO
 	CreateDeviceAndSwapChain();
+	CreateRenderTargetView();
+	SetViewport();
 	
 }
 
@@ -29,7 +31,30 @@ void Game::Update()
 
 void Game::Render()
 {
+	RenderBegin();
 
+	// TODO IA(Input Assembler) - VS(Vertex Shader) - RS - PS(Pixel Shader) - OM(Output)
+	{
+
+	}
+
+	RenderEnd();
+}
+
+void Game::RenderBegin()
+{
+	// 후면 버퍼에 그려달라고 요청
+	_deviceContext->OMSetRenderTargets(1, _renderTargetView.GetAddressOf(), nullptr);	// OM
+	_deviceContext->ClearRenderTargetView(_renderTargetView.Get(), _clearColor);
+	_deviceContext->RSSetViewports(1, &_viewport);										// RS
+}
+
+void Game::RenderEnd()
+{
+	// 아래의 함수가 굉장히 중요하다.
+	// 후면, 전면 두개 스왑
+	HRESULT hr = _swapChain->Present(1, 0); // 제출한다.
+	CHECK(hr);
 }
 
 // 800 x 600
@@ -76,4 +101,31 @@ void Game::CreateDeviceAndSwapChain()
 	);
 
 	CHECK(hr);
+}
+
+void Game::CreateRenderTargetView()
+{
+	HRESULT hr;
+	
+	ComPtr<ID3D11Texture2D> backBuffer = nullptr;
+
+	// 스왑 체인에서 후면 버퍼에 해당하는 버퍼를
+	// ID3D11Texture2D라는 타입으로 반환해서 backBuffer에 할당
+	hr = _swapChain->GetBuffer(0, __uuidof(ID3D11Texture2D), (void**)backBuffer.GetAddressOf());
+	CHECK(hr);
+
+	// 후면버퍼를 render target view로 발급 받음.
+	_device->CreateRenderTargetView(backBuffer.Get(), nullptr, _renderTargetView.GetAddressOf());
+	CHECK(hr);
+
+}
+
+void Game::SetViewport()
+{
+	_viewport.TopLeftX = 0.f;
+	_viewport.TopLeftY = 0.f;
+	_viewport.Width = static_cast<float>(_width);
+	_viewport.Height = static_cast<float>(_height);
+	_viewport.MinDepth = 0.f;
+	_viewport.MaxDepth = 1.f;
 }
