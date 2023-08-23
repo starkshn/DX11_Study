@@ -43,10 +43,14 @@ void Game::Render()
 
 void Game::RenderBegin()
 {
-	// 후면 버퍼에 그려달라고 요청
+	// "그림 그리는게 완료 되었다면 _renderTargetView에다가 그려줘~" 라고(후면 버퍼에게) 요청한다.
 	_deviceContext->OMSetRenderTargets(1, _renderTargetView.GetAddressOf(), nullptr);	// OM
+
+	// 초기값으로 밀어버리는 부분
 	_deviceContext->ClearRenderTargetView(_renderTargetView.Get(), _clearColor);
-	_deviceContext->RSSetViewports(1, &_viewport);										// RS
+
+	// 화면의 크기 정보 기입
+	_deviceContext->RSSetViewports(1, &_viewport); // RS
 }
 
 void Game::RenderEnd()
@@ -114,7 +118,11 @@ void Game::CreateRenderTargetView()
 	hr = _swapChain->GetBuffer(0, __uuidof(ID3D11Texture2D), (void**)backBuffer.GetAddressOf());
 	CHECK(hr);
 
+	// 스왑체인에서 가져온 backBuffer를 아래의 함수를 통해서 
+	// _renderTargetView에 묘사하는 녀석을 넣어준 느낌.
 	// 후면버퍼를 render target view로 발급 받음.
+
+	// GPU는 _renderTargetView여기다가 그림을 그린다.
 	_device->CreateRenderTargetView(backBuffer.Get(), nullptr, _renderTargetView.GetAddressOf());
 	CHECK(hr);
 
@@ -128,4 +136,52 @@ void Game::SetViewport()
 	_viewport.Height = static_cast<float>(_height);
 	_viewport.MinDepth = 0.f;
 	_viewport.MaxDepth = 1.f;
+}
+
+void Game::CreateGeometry()
+{
+	{
+		_vertices.resize(3);
+
+		_vertices[0].position = Vec3(-0.5f, -0.5f, 0.f);
+		_vertices[0].color = Color(1.f, 0.f, 0.f, 0.f);
+
+		_vertices[1].position = Vec3(0.f, 0.5f, 0.f);
+		_vertices[1].color = Color(1.f, 0.f, 0.f, 0.f);
+
+		_vertices[2].position = Vec3(0.5f, -0.5f, 0.f);
+		_vertices[2].color = Color(1.f, 0.f, 0.f, 0.f);
+	}
+
+	// VertexBuffer
+	{
+		// 아래의 desc, data는 GPU쪽에 Buffer를 생성하는 작업이다.
+		// CPU에 있던 데이터들 GPU로 복사한다.
+		D3D11_BUFFER_DESC desc;
+		ZeroMemory(&desc, sizeof(desc)); // 자신이 없다면 먼저 0으로 셋팅
+		desc.Usage = D3D11_USAGE_IMMUTABLE;
+		desc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
+		desc.ByteWidth = (uint32)sizeof(Vertex) * _vertices.size();
+		
+		D3D11_SUBRESOURCE_DATA data;
+		ZM(&data, sizeof(data));
+		data.pSysMem = _vertices.data();
+		
+		// GPU에게 건내준다.
+		_device->CreateBuffer(&desc, &data, _vertexBuffer.GetAddressOf());
+	}
+}
+
+// 데이터를 어떻게 읽어야 할지 알려달라. 그래서 GPU에게 알려주는 함수
+void Game::CreateInputLayout()
+{
+	// Struct.h의 Vertex가 어떻게 되어 있는지 묘사하는 부분
+	D3D11_INPUT_ELEMENT_DESC layout[] =
+	{
+		{"POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0},
+		{"COLOR", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, 12, D3D11_INPUT_PER_VERTEX_DATA, 0},
+	};
+
+	const int32 count = sizeof(layout) / sizeof(D3D11_INPUT_ELEMENT_DESC);
+	// _device->CreateInputLayout(layout, count);
 }

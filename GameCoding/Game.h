@@ -19,9 +19,14 @@ private:
 	void CreateDeviceAndSwapChain();
 
 	// swap chain에(후면 버퍼에 그리는 작업 요청)
+	// View는 GPU에게 설명하기 위한 Tag느낌의 부연설명
 	void CreateRenderTargetView();
 
 	void SetViewport();
+
+private:
+	void CreateGeometry();
+	void CreateInputLayout();
 
 private:
 	HWND	_hWnd;
@@ -45,5 +50,11 @@ private:
 	// 화면 구성(묘사)하는 구조체
 	D3D11_VIEWPORT _viewport = { 0 };
 	float _clearColor[4] = {0.0f, 0.0f, 0.0f, 0.0f}; // 후면 버퍼 초기화 색
+
+private:
+	// Geometry
+	// [CPU <-> RAM], [GPU <-> VRAM]
+	vector<Vertex> _vertices;
+	ComPtr<ID3D11Buffer> _vertexBuffer = nullptr;
 
 };

@@ -37,3 +37,4 @@ using namespace Microsoft::WRL;
 #endif
 
 #define CHECK(p) assert(SUCCEEDED(p))
+#define ZM(p, s) ZeroMemory(p, s)

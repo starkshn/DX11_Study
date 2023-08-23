@@ -5,7 +5,11 @@
       <FullPath>D:\DirecX11\DX11_Projects\GameCoding\DX11_Study\Binaries\GameCoding.exe</FullPath>
     </ProjectOutput>
   </ProjectOutputs>
-  <ContentFiles />
+  <ContentFiles>
+    <ContentFile>
+      <FullPath>D:\DirecX11\DX11_Projects\GameCoding\DX11_Study\Binaries\Default.cso</FullPath>
+    </ContentFile>
+  </ContentFiles>
   <SatelliteDlls />
   <NonRecipeFileRefs />
 </Project>

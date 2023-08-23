@@ -1,4 +1,6 @@
-﻿  Game.cpp
-  GameCoding.cpp
-  코드를 생성하고 있습니다...
+﻿D:\DirecX11\DX11_Projects\GameCoding\DX11_Study\GameCoding\Default.hlsl(22,5-30): warning X3206: implicit truncation of vector type
+  
+  compilation object save succeeded; see D:\DirecX11\DX11_Projects\GameCoding\DX11_Study\Binaries\Default.cso
+  Game.cpp
+D:\DirecX11\DX11_Projects\GameCoding\DX11_Study\GameCoding\Game.cpp(164,43): warning C4267: '=': 'size_t'에서 'UINT'(으)로 변환하면서 데이터가 손실될 수 있습니다.
   GameCoding.vcxproj -> D:\DirecX11\DX11_Projects\GameCoding\DX11_Study\Binaries\GameCoding.exe
