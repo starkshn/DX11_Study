@@ -21,12 +21,18 @@ private:
 	// swap chain에(후면 버퍼에 그리는 작업 요청)
 	// View는 GPU에게 설명하기 위한 Tag느낌의 부연설명
 	void CreateRenderTargetView();
-
 	void SetViewport();
 
 private:
-	void CreateGeometry();
-	void CreateInputLayout();
+	void CreateGeometry();		// 기하 도형 생성
+	void CreateInputLayout();	// 기하 도형의 설명서
+
+	// GPU에게 동작해달라고 요청하는 부분
+	void CreateVS(); // Create Vertex Shader
+	void CreatePS(); // Create Pixel Shader
+
+
+	void LoadShaderFromFile(const wstring& path, const string& name, const string& version, ComPtr<ID3DBlob>& blob);
 
 private:
 	HWND	_hWnd;
@@ -35,26 +41,30 @@ private:
 
 	// DX
 private:
-	// ID3D 는 COM 객체이다. (쌩포인터 X) 
-	// wrl.h 에 정의(선언)
-	// Device & SwapChain
+	// ID3D 는 COM 객체이다. (쌩포인터 X), wrl.h 에 정의(선언)
 	ComPtr<ID3D11Device> _device = nullptr;
 	ComPtr<ID3D11DeviceContext> _deviceContext = nullptr;
 	ComPtr<IDXGISwapChain> _swapChain = nullptr;
-
-	// Render Traget View
-	// 후면 버퍼를 묘사하는 녀석
-	ComPtr<ID3D11RenderTargetView> _renderTargetView; // 후면 버퍼에 그려달라고 요청할 객체
+	ComPtr<ID3D11RenderTargetView> _renderTargetView = nullptr; // Render Traget View(후면 버퍼 묘사)
 
 	// Misc (view port)
-	// 화면 구성(묘사)하는 구조체
+private:
 	D3D11_VIEWPORT _viewport = { 0 };
 	float _clearColor[4] = {0.0f, 0.0f, 0.0f, 0.0f}; // 후면 버퍼 초기화 색
 
-private:
 	// Geometry
+private:
 	// [CPU <-> RAM], [GPU <-> VRAM]
 	vector<Vertex> _vertices;
 	ComPtr<ID3D11Buffer> _vertexBuffer = nullptr;
+	ComPtr<ID3D11InputLayout> _inputLayout = nullptr; // Vertex구조 묘사
 
+	// Shader Load
+	// VS
+	ComPtr<ID3D11VertexShader> _vertexShader = nullptr; // vertex shader
+	ComPtr<ID3DBlob> _vsBlob = nullptr;					// blob
+
+	// PS
+	ComPtr<ID3D11PixelShader> _pixelShader = nullptr;	// pixel shader
+	ComPtr<ID3DBlob> _psBlob = nullptr;					// blob
 };

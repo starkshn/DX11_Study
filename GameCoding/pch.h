@@ -9,6 +9,7 @@
 #include <list>
 #include <map>
 #include <unordered_map>
+#include <string>
 using namespace std;
 
 // WIN API
@@ -36,5 +37,5 @@ using namespace Microsoft::WRL;
 #pragma comment(lib, "DirectXTex\\DirectXTex.lib")
 #endif
 
-#define CHECK(p) assert(SUCCEEDED(p))
-#define ZM(p, s) ZeroMemory(p, s)
+#define C(p) assert(SUCCEEDED(p))
+#define Z(p, s) ZeroMemory(p, s)

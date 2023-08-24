@@ -22,6 +22,10 @@ void Game::Init(HWND hWnd)
 	CreateRenderTargetView();
 	SetViewport();
 	
+	CreateGeometry();		// VertextBuffer GPU에게 건내줌
+	CreateVS();				// Vertex Shader 생성
+	CreateInputLayout();	// InputLayout 생성
+	CreatePS();				// Pixel Shader 생성
 }
 
 void Game::Update()
@@ -33,9 +37,27 @@ void Game::Render()
 {
 	RenderBegin();
 
-	// TODO IA(Input Assembler) - VS(Vertex Shader) - RS - PS(Pixel Shader) - OM(Output)
+	// TODO 
+	// IA(Input Assembler) - VS(Vertex Shader) - RS - PS(Pixel Shader) - OM(Output)
 	{
+		uint32 stride = sizeof(Vertex);
+		uint32 offset = 0;
 
+		// IA
+		_deviceContext->IASetVertexBuffers(0, 1, _vertexBuffer.GetAddressOf(), &stride, &offset);
+		_deviceContext->IASetInputLayout(_inputLayout.Get());
+		_deviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+
+		// VS
+		_deviceContext->VSSetShader(_vertexShader.Get(), nullptr, 0);
+
+		// RS
+
+		// PS
+		_deviceContext->PSSetShader(_pixelShader.Get(), nullptr, 0);
+
+		// OM
+		_deviceContext->Draw(_vertices.size(), 0);
 	}
 
 	RenderEnd();
@@ -58,7 +80,7 @@ void Game::RenderEnd()
 	// 아래의 함수가 굉장히 중요하다.
 	// 후면, 전면 두개 스왑
 	HRESULT hr = _swapChain->Present(1, 0); // 제출한다.
-	CHECK(hr);
+	C(hr);
 }
 
 // 800 x 600
@@ -104,7 +126,7 @@ void Game::CreateDeviceAndSwapChain()
 		_deviceContext.GetAddressOf()
 	);
 
-	CHECK(hr);
+	C(hr);
 }
 
 void Game::CreateRenderTargetView()
@@ -116,7 +138,7 @@ void Game::CreateRenderTargetView()
 	// 스왑 체인에서 후면 버퍼에 해당하는 버퍼를
 	// ID3D11Texture2D라는 타입으로 반환해서 backBuffer에 할당
 	hr = _swapChain->GetBuffer(0, __uuidof(ID3D11Texture2D), (void**)backBuffer.GetAddressOf());
-	CHECK(hr);
+	C(hr);
 
 	// 스왑체인에서 가져온 backBuffer를 아래의 함수를 통해서 
 	// _renderTargetView에 묘사하는 녀석을 넣어준 느낌.
@@ -124,7 +146,7 @@ void Game::CreateRenderTargetView()
 
 	// GPU는 _renderTargetView여기다가 그림을 그린다.
 	_device->CreateRenderTargetView(backBuffer.Get(), nullptr, _renderTargetView.GetAddressOf());
-	CHECK(hr);
+	C(hr);
 
 }
 
@@ -143,14 +165,14 @@ void Game::CreateGeometry()
 	{
 		_vertices.resize(3);
 
-		_vertices[0].position = Vec3(-0.5f, -0.5f, 0.f);
-		_vertices[0].color = Color(1.f, 0.f, 0.f, 0.f);
+		_vertices[0].position = Vec3(-0.5f, -0.5f, 0.0f);
+		_vertices[0].color = Color(1.f, 0.f, 0.f, 1.0f);
 
 		_vertices[1].position = Vec3(0.f, 0.5f, 0.f);
-		_vertices[1].color = Color(1.f, 0.f, 0.f, 0.f);
+		_vertices[1].color = Color(0.f, 1.f, 0.f, 1.0f);
 
 		_vertices[2].position = Vec3(0.5f, -0.5f, 0.f);
-		_vertices[2].color = Color(1.f, 0.f, 0.f, 0.f);
+		_vertices[2].color = Color(0.f, 0.f, 1.f, 1.0f);
 	}
 
 	// VertexBuffer
@@ -158,13 +180,13 @@ void Game::CreateGeometry()
 		// 아래의 desc, data는 GPU쪽에 Buffer를 생성하는 작업이다.
 		// CPU에 있던 데이터들 GPU로 복사한다.
 		D3D11_BUFFER_DESC desc;
-		ZeroMemory(&desc, sizeof(desc)); // 자신이 없다면 먼저 0으로 셋팅
+		Z(&desc, sizeof(desc)); // 자신이 없다면 먼저 0으로 셋팅
 		desc.Usage = D3D11_USAGE_IMMUTABLE;
 		desc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
-		desc.ByteWidth = (uint32)sizeof(Vertex) * _vertices.size();
+		desc.ByteWidth = (uint32)(sizeof(Vertex) * _vertices.size());
 		
 		D3D11_SUBRESOURCE_DATA data;
-		ZM(&data, sizeof(data));
+		Z(&data, sizeof(data));
 		data.pSysMem = _vertices.data();
 		
 		// GPU에게 건내준다.
@@ -183,5 +205,55 @@ void Game::CreateInputLayout()
 	};
 
 	const int32 count = sizeof(layout) / sizeof(D3D11_INPUT_ELEMENT_DESC);
-	// _device->CreateInputLayout(layout, count);
+	_device->CreateInputLayout(layout, count, _vsBlob->GetBufferPointer(), _vsBlob->GetBufferSize(), _inputLayout.GetAddressOf());
+}
+
+void Game::CreateVS()
+{
+	// VS만들어 버림.
+	LoadShaderFromFile(L"Default.hlsl", "VS", "vs_5_0", _vsBlob);
+
+	HRESULT hr = _device->CreateVertexShader
+	(
+		_vsBlob->GetBufferPointer(),
+		_vsBlob->GetBufferSize(), 
+		nullptr,
+		_vertexShader.GetAddressOf()
+	);
+	C(hr);
+}
+
+void Game::CreatePS()
+{
+	// VS만들어 버려엇
+	LoadShaderFromFile(L"Default.hlsl", "PS", "ps_5_0", _psBlob);
+
+	HRESULT hr = _device->CreatePixelShader
+	(
+		_psBlob->GetBufferPointer(),
+		_psBlob->GetBufferSize(),
+		nullptr,
+		_pixelShader.GetAddressOf()
+	);
+	C(hr);
+}
+
+void Game::LoadShaderFromFile(const wstring& path, const string& name, const string& version, ComPtr<ID3DBlob>& blob)
+{
+	const uint32 compileFlag = D3DCOMPILE_DEBUG | D3DCOMPILE_SKIP_OPTIMIZATION;
+
+	// d3dcompiler.h에서
+	HRESULT hr = ::D3DCompileFromFile
+	(
+		path.c_str(),
+		nullptr,
+		D3D_COMPILE_STANDARD_FILE_INCLUDE,
+		name.c_str(),
+		version.c_str(),
+		compileFlag,
+		0,
+		blob.GetAddressOf(),
+		nullptr
+	);
+	C(hr);
 }
