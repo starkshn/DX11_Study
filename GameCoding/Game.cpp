@@ -26,6 +26,7 @@ void Game::Init(HWND hWnd)
 	CreateVS();				// Vertex Shader 생성
 	CreateInputLayout();	// InputLayout 생성
 	CreatePS();				// Pixel Shader 생성
+	CreateSRV();			// Shader Resouce View로드 및 생성
 }
 
 void Game::Update()
@@ -33,31 +34,58 @@ void Game::Update()
 
 }
 
+
 void Game::Render()
 {
 	RenderBegin();
 
-	// TODO 
+	// TODO
 	// IA(Input Assembler) - VS(Vertex Shader) - RS - PS(Pixel Shader) - OM(Output)
 	{
 		uint32 stride = sizeof(Vertex);
 		uint32 offset = 0;
 
-		// IA
+		// ==========================================
+		// IA단계
+
+		// Vertex Buffer
 		_deviceContext->IASetVertexBuffers(0, 1, _vertexBuffer.GetAddressOf(), &stride, &offset);
+
+		// Index Buffer
+		_deviceContext->IASetIndexBuffer(_indexBuffer.Get(), DXGI_FORMAT_R32_UINT, 0);
+
 		_deviceContext->IASetInputLayout(_inputLayout.Get());
 		_deviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
+
+		// ==========================================
 		// VS
 		_deviceContext->VSSetShader(_vertexShader.Get(), nullptr, 0);
 
+		// ==========================================
 		// RS
 
+
+		// ==========================================
 		// PS
 		_deviceContext->PSSetShader(_pixelShader.Get(), nullptr, 0);
 
+		flag += 1;
+		if (flag >= 100)
+		{
+			if (flag >= 200) flag = 0;
+
+			_deviceContext->PSSetShaderResources(0, 1, _shaderResourceView.GetAddressOf());
+		}
+		else if (flag < 100)
+		{
+			_deviceContext->PSSetShaderResources(0, 1, _shaderResourceView2.GetAddressOf());
+		}
+
+		// ==========================================
 		// OM
-		_deviceContext->Draw(_vertices.size(), 0);
+		// _deviceContext->Draw(_vertices.size(), 0);
+		_deviceContext->DrawIndexed(_indices.size(), 0, 0);
 	}
 
 	RenderEnd();
@@ -162,17 +190,40 @@ void Game::SetViewport()
 
 void Game::CreateGeometry()
 {
+	// Vertex Data_1
 	{
-		_vertices.resize(3);
+		_vertices.resize(4);
 
-		_vertices[0].position = Vec3(-0.5f, -0.5f, 0.0f);
+		// 13
+		// 02
+		/*_vertices[0].position = Vec3(-0.5f, -0.5f, 0.0f);
 		_vertices[0].color = Color(1.f, 0.f, 0.f, 1.0f);
 
-		_vertices[1].position = Vec3(0.f, 0.5f, 0.f);
-		_vertices[1].color = Color(0.f, 1.f, 0.f, 1.0f);
+		_vertices[1].position = Vec3(-0.5f, 0.5f, 0.f);
+		_vertices[1].color = Color(1.f, 0.f, 0.f, 1.0f);
 
 		_vertices[2].position = Vec3(0.5f, -0.5f, 0.f);
-		_vertices[2].color = Color(0.f, 0.f, 1.f, 1.0f);
+		_vertices[2].color = Color(1.f, 0.f, 0.f, 1.0f);
+
+		_vertices[3].position = Vec3(0.5f, 0.5f, 0.f);
+		_vertices[3].color = Color(1.f, 0.f, 0.f, 1.0f);*/
+	}
+
+	// Vertex Data_2
+	{
+		// 13
+		// 02
+		_vertices[0].position = Vec3(-1.f, -1.f, 0.0f);
+		_vertices[0].uv = Vec2(0.f, 1.f);
+
+		_vertices[1].position = Vec3(-1.f, 1.f, 0.f);
+		_vertices[1].uv = Vec2(0.f, 0.f);
+
+		_vertices[2].position = Vec3(1.f, -1.f, 0.f);
+		_vertices[2].uv = Vec2(1.f, 1.f);
+
+		_vertices[3].position = Vec3(1.f, 1.f, 0.f);
+		_vertices[3].uv = Vec2(1.f, 0.f);
 	}
 
 	// VertexBuffer
@@ -190,8 +241,31 @@ void Game::CreateGeometry()
 		data.pSysMem = _vertices.data();
 		
 		// GPU에게 건내준다.
-		_device->CreateBuffer(&desc, &data, _vertexBuffer.GetAddressOf());
+		HRESULT hr = _device->CreateBuffer(&desc, &data, _vertexBuffer.GetAddressOf());
+		C(hr);
 	}
+
+	// Index
+	{
+		_indices = {0, 1, 2, 2, 1, 3};
+	}
+
+	// IndexBuffer
+	{
+		D3D11_BUFFER_DESC desc;
+		Z(&desc, sizeof(desc)); // 자신이 없다면 먼저 0으로 셋팅
+		desc.Usage = D3D11_USAGE_IMMUTABLE;
+		desc.BindFlags = D3D11_BIND_INDEX_BUFFER;
+		desc.ByteWidth = (uint32)(sizeof(uint32) * _indices.size());
+
+		D3D11_SUBRESOURCE_DATA data;
+		Z(&data, sizeof(data));
+		data.pSysMem = _indices.data();
+
+		// GPU에게 건내준다.
+		HRESULT hr = _device->CreateBuffer(&desc, &data, _indexBuffer.GetAddressOf());
+		C(hr);
+	};
 }
 
 // 데이터를 어떻게 읽어야 할지 알려달라. 그래서 GPU에게 알려주는 함수
@@ -201,7 +275,7 @@ void Game::CreateInputLayout()
 	D3D11_INPUT_ELEMENT_DESC layout[] =
 	{
 		{"POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0},
-		{"COLOR", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, 12, D3D11_INPUT_PER_VERTEX_DATA, 0},
+		{"TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, 12, D3D11_INPUT_PER_VERTEX_DATA, 0},
 	};
 
 	const int32 count = sizeof(layout) / sizeof(D3D11_INPUT_ELEMENT_DESC);
@@ -234,6 +308,33 @@ void Game::CreatePS()
 		_psBlob->GetBufferSize(),
 		nullptr,
 		_pixelShader.GetAddressOf()
+	);
+	C(hr);
+}
+
+void Game::CreateSRV()
+{
+	DirectX::TexMetadata md;
+	DirectX::ScratchImage img;
+	HRESULT hr = ::LoadFromWICFile(L"BFS.jpg", WIC_FLAGS_NONE, &md, img);
+	C(hr);
+
+	hr = ::CreateShaderResourceView
+	(
+		_device.Get(), img.GetImages(), img.GetImageCount(),
+		md, _shaderResourceView.GetAddressOf()
+	);
+	C(hr);
+
+	DirectX::TexMetadata md2;
+	DirectX::ScratchImage img2;
+	hr = ::LoadFromWICFile(L"Ral.jpg", WIC_FLAGS_NONE, &md2, img2);
+	C(hr);
+
+	hr = ::CreateShaderResourceView
+	(
+		_device.Get(), img2.GetImages(), img2.GetImageCount(),
+		md2, _shaderResourceView2.GetAddressOf()
 	);
 	C(hr);
 }

@@ -20,17 +20,20 @@ private:
 
 	// swap chain에(후면 버퍼에 그리는 작업 요청)
 	// View는 GPU에게 설명하기 위한 Tag느낌의 부연설명
-	void CreateRenderTargetView();
+	void CreateRenderTargetView(); // RTV
 	void SetViewport();
 
 private:
 	void CreateGeometry();		// 기하 도형 생성
 	void CreateInputLayout();	// 기하 도형의 설명서
+	// InputLayout은 Vertex가 어떻게 생겼는지 묘사하는 녀석이다
 
 	// GPU에게 동작해달라고 요청하는 부분
 	void CreateVS(); // Create Vertex Shader
 	void CreatePS(); // Create Pixel Shader
 
+	// Shader Resouce View
+	void CreateSRV();
 
 	void LoadShaderFromFile(const wstring& path, const string& name, const string& version, ComPtr<ID3DBlob>& blob);
 
@@ -38,6 +41,8 @@ private:
 	HWND	_hWnd;
 	uint32	_width = 0;
 	uint32	_height = 0;
+
+	uint32 flag = 0;
 
 	// DX
 private:
@@ -57,6 +62,9 @@ private:
 	// [CPU <-> RAM], [GPU <-> VRAM]
 	vector<Vertex> _vertices;
 	ComPtr<ID3D11Buffer> _vertexBuffer = nullptr;
+	vector<uint32> _indices;
+	ComPtr<ID3D11Buffer> _indexBuffer = nullptr;
+
 	ComPtr<ID3D11InputLayout> _inputLayout = nullptr; // Vertex구조 묘사
 
 	// Shader Load
@@ -67,4 +75,8 @@ private:
 	// PS
 	ComPtr<ID3D11PixelShader> _pixelShader = nullptr;	// pixel shader
 	ComPtr<ID3DBlob> _psBlob = nullptr;					// blob
+
+	// SRV
+	ComPtr<ID3D11ShaderResourceView> _shaderResourceView = nullptr;
+	ComPtr<ID3D11ShaderResourceView> _shaderResourceView2 = nullptr;
 };
