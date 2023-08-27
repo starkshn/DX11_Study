@@ -35,6 +35,8 @@ private:
 	// Shader Resouce View
 	void CreateSRV();
 
+	void CreateConstantBuffer();
+
 	void LoadShaderFromFile(const wstring& path, const string& name, const string& version, ComPtr<ID3DBlob>& blob);
 
 private:
@@ -79,4 +81,9 @@ private:
 	// SRV
 	ComPtr<ID3D11ShaderResourceView> _shaderResourceView = nullptr;
 	ComPtr<ID3D11ShaderResourceView> _shaderResourceView2 = nullptr;
+
+private:
+	// SRT를 transformData에 넣어주게 된다.
+	TransformData _transformData;
+	ComPtr<ID3D11Buffer> _constantBuffer = nullptr;
 };

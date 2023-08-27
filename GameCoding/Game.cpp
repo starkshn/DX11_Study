@@ -27,11 +27,26 @@ void Game::Init(HWND hWnd)
 	CreateInputLayout();	// InputLayout 생성
 	CreatePS();				// Pixel Shader 생성
 	CreateSRV();			// Shader Resouce View로드 및 생성
+
+	CreateConstantBuffer();
 }
 
 void Game::Update()
 {
+	_transformData.offset.x += 0.003f;
+	_transformData.offset.y += 0.003f;
 
+
+	D3D11_MAPPED_SUBRESOURCE subResouce;
+	Z(&subResouce, sizeof(subResouce));
+
+	// 뚜껑 열기
+	_deviceContext->Map(_constantBuffer.Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &subResouce);
+
+	::memcpy(subResouce.pData, &_transformData, sizeof(_transformData)); // CPU -> GPU로 데이터가 복사가 될 것이다.
+
+	// 뚜껑 닫기
+	_deviceContext->Unmap(_constantBuffer.Get(), 0);
 }
 
 
@@ -61,6 +76,7 @@ void Game::Render()
 		// ==========================================
 		// VS
 		_deviceContext->VSSetShader(_vertexShader.Get(), nullptr, 0);
+		_deviceContext->VSSetConstantBuffers(0, 1, _constantBuffer.GetAddressOf());
 
 		// ==========================================
 		// RS
@@ -70,18 +86,8 @@ void Game::Render()
 		// PS
 		_deviceContext->PSSetShader(_pixelShader.Get(), nullptr, 0);
 
-		flag += 1;
-		if (flag >= 100)
-		{
-			if (flag >= 200) flag = 0;
-
-			_deviceContext->PSSetShaderResources(0, 1, _shaderResourceView.GetAddressOf());
-		}
-		else if (flag < 100)
-		{
-			_deviceContext->PSSetShaderResources(0, 1, _shaderResourceView2.GetAddressOf());
-		}
-
+		_deviceContext->PSSetShaderResources(0, 1, _shaderResourceView.GetAddressOf());
+		
 		// ==========================================
 		// OM
 		// _deviceContext->Draw(_vertices.size(), 0);
@@ -213,16 +219,16 @@ void Game::CreateGeometry()
 	{
 		// 13
 		// 02
-		_vertices[0].position = Vec3(-1.f, -1.f, 0.0f);
+		_vertices[0].position = Vec3(-0.5f, -0.5f, 0.0f);
 		_vertices[0].uv = Vec2(0.f, 1.f);
 
-		_vertices[1].position = Vec3(-1.f, 1.f, 0.f);
+		_vertices[1].position = Vec3(-0.5f, 0.5f, 0.f);
 		_vertices[1].uv = Vec2(0.f, 0.f);
 
-		_vertices[2].position = Vec3(1.f, -1.f, 0.f);
+		_vertices[2].position = Vec3(0.5f, -0.5f, 0.f);
 		_vertices[2].uv = Vec2(1.f, 1.f);
 
-		_vertices[3].position = Vec3(1.f, 1.f, 0.f);
+		_vertices[3].position = Vec3(0.5f, 0.5f, 0.f);
 		_vertices[3].uv = Vec2(1.f, 0.f);
 	}
 
@@ -336,6 +342,19 @@ void Game::CreateSRV()
 		_device.Get(), img2.GetImages(), img2.GetImageCount(),
 		md2, _shaderResourceView2.GetAddressOf()
 	);
+	C(hr);
+}
+
+void Game::CreateConstantBuffer()
+{
+	D3D11_BUFFER_DESC desc;
+	Z(&desc, sizeof(desc));
+	desc.Usage = D3D11_USAGE_DYNAMIC; // CPU_Write+ GPU_Read
+	desc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
+	desc.ByteWidth = sizeof(TransformData);
+	desc.CPUAccessFlags = D3D10_CPU_ACCESS_WRITE;
+	
+	HRESULT hr = _device->CreateBuffer(&desc, nullptr, _constantBuffer.GetAddressOf());
 	C(hr);
 }
 
