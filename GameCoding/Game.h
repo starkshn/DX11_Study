@@ -32,6 +32,12 @@ private:
 	void CreateVS(); // Create Vertex Shader
 	void CreatePS(); // Create Pixel Shader
 
+
+	// 상대적으로 덜 중요한 삼총사
+	void CreateRasterizerState();
+	void CreateSamplerState();		// 샘플링을 한다.
+	void CreateBlendState();
+
 	// Shader Resouce View
 	void CreateSRV();
 
@@ -72,7 +78,11 @@ private:
 	// Shader Load
 	// VS
 	ComPtr<ID3D11VertexShader> _vertexShader = nullptr; // vertex shader
-	ComPtr<ID3DBlob> _vsBlob = nullptr;					// blob
+	ComPtr<ID3DBlob> _vsBlob = nullptr;				
+
+	// RAS
+	ComPtr<ID3D11RasterizerState> _rasterizerState = nullptr;
+
 
 	// PS
 	ComPtr<ID3D11PixelShader> _pixelShader = nullptr;	// pixel shader
@@ -84,6 +94,10 @@ private:
 
 private:
 	// SRT를 transformData에 넣어주게 된다.
-	TransformData _transformData;
-	ComPtr<ID3D11Buffer> _constantBuffer = nullptr;
+	TransformData			_transformData;
+	ComPtr<ID3D11Buffer>	_constantBuffer = nullptr;
+
+private:
+	ComPtr<ID3D11SamplerState> _samplerState = nullptr;
+	ComPtr<ID3D11BlendState> _blendState = nullptr;
 };

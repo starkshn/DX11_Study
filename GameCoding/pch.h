@@ -41,3 +41,4 @@ using namespace Microsoft::WRL;
 
 #define C(p) assert(SUCCEEDED(p))
 #define Z(p, s) ZeroMemory(p, s)
+#define H HRESULT
