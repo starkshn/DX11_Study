@@ -15,7 +15,9 @@ struct VS_OUTPUT
 
 cbuffer TransformData : register(b0)
 {
-    float4 offset;
+    row_major matrix matWorld;
+    row_major matrix matView;
+    row_major matrix matProjection;
 }
 
 // IA - VS - RS - PS - OM
@@ -24,7 +26,13 @@ cbuffer TransformData : register(b0)
 VS_OUTPUT VS(VS_INPUT input)
 {
     VS_OUTPUT output;
-    output.position = input.position + offset;
+    
+    // WVP
+    float4 position = mul(input.position, matWorld);
+    position = mul(position, matView);
+    position = mul(position, matProjection);
+    
+    output.position = position;
     output.uv = input.uv;
     
     return output;

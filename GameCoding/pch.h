@@ -12,6 +12,8 @@
 #include <string>
 using namespace std;
 
+#include <memory>
+
 // WIN API
 #include <windows.h>
 #include <assert.h>
@@ -39,6 +41,16 @@ using namespace Microsoft::WRL;
 #pragma comment(lib, "DirectXTex\\DirectXTex.lib")
 #endif
 
-#define C(p) assert(SUCCEEDED(p))
+
+// Mecros
+#define _XM_NO_INTRINSICS_
+
+#define C(p)	assert(SUCCEEDED(p))
 #define Z(p, s) ZeroMemory(p, s)
-#define H HRESULT
+#define H		HRESULT
+
+
+// Class Wrapping
+
+// Engine
+#include "Graphics.h"
