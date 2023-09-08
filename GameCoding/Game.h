@@ -33,45 +33,48 @@ private:
 	void LoadShaderFromFile(const wstring& path, const string& name, const string& version, ComPtr<ID3DBlob>& blob);
 
 private:
-	HWND	_hWnd;
+	HWND								_hWnd;
 
 private:
-	shared_ptr<Graphics> _graphcis;
+	shared_ptr<Graphics>				_graphcis;
 
+private:
 	// Geometry
-private:
-	// [CPU <-> RAM], [GPU <-> VRAM]
-	vector<Vertex> _vertices;
-	ComPtr<ID3D11Buffer> _vertexBuffer = nullptr;
-	vector<uint32> _indices;
-	ComPtr<ID3D11Buffer> _indexBuffer = nullptr;
+	// VertexBuffer
+	vector<Vertex>						_vertices;
+	shared_ptr<VertexBuffer>			_vertexBuffer = nullptr;
 
-	ComPtr<ID3D11InputLayout> _inputLayout = nullptr; // Vertex구조 묘사
+	// IndexBuffer
+	vector<uint32>						_indices;
+	shared_ptr<IndexBuffer>				_indexBuffer = nullptr;
+
+private:
+	shared_ptr<InputLayout>				_inputLayout = nullptr;
 
 	// Shader Load
 	// VS
-	ComPtr<ID3D11VertexShader> _vertexShader = nullptr; // vertex shader
-	ComPtr<ID3DBlob> _vsBlob = nullptr;				
+	ComPtr<ID3D11VertexShader>			_vertexShader = nullptr; // vertex shader
+	ComPtr<ID3DBlob>					_vsBlob = nullptr;				
 
 	// RAS
-	ComPtr<ID3D11RasterizerState> _rasterizerState = nullptr;
+	ComPtr<ID3D11RasterizerState>		_rasterizerState = nullptr;
 
 	// PS
-	ComPtr<ID3D11PixelShader> _pixelShader = nullptr;	// pixel shader
-	ComPtr<ID3DBlob> _psBlob = nullptr;					// blob
+	ComPtr<ID3D11PixelShader>			_pixelShader = nullptr;	// pixel shader
+	ComPtr<ID3DBlob>					_psBlob = nullptr;					// blob
 
 	// SRV
-	ComPtr<ID3D11ShaderResourceView> _shaderResourceView = nullptr;
-	ComPtr<ID3D11ShaderResourceView> _shaderResourceView2 = nullptr;
+	ComPtr<ID3D11ShaderResourceView>	_shaderResourceView = nullptr;
+	ComPtr<ID3D11ShaderResourceView>	_shaderResourceView2 = nullptr;
 
 private:
 	// SRT를 transformData에 넣어주게 된다.
-	TransformData			_transformData;
-	ComPtr<ID3D11Buffer>	_constantBuffer = nullptr;
+	TransformData						_transformData;
+	ComPtr<ID3D11Buffer>				_constantBuffer = nullptr;
 
 private:
-	ComPtr<ID3D11SamplerState>	_samplerState = nullptr;
-	ComPtr<ID3D11BlendState>	_blendState = nullptr;
+	ComPtr<ID3D11SamplerState>			_samplerState = nullptr;
+	ComPtr<ID3D11BlendState>			_blendState = nullptr;
 
 private:
 	Vec3 _localPosition = {0.f, 0.f, 0.f};

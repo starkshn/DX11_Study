@@ -87,6 +87,24 @@
     <ClInclude Include="Graphics.h">
       <Filter>소스 파일\00.Engine\Pipeline</Filter>
     </ClInclude>
+    <ClInclude Include="IndexBuffer.h">
+      <Filter>소스 파일\00.Engine\Pipeline\01.InputAssembler</Filter>
+    </ClInclude>
+    <ClInclude Include="InputLayout.h">
+      <Filter>소스 파일\00.Engine\Pipeline\01.InputAssembler</Filter>
+    </ClInclude>
+    <ClInclude Include="VertexBuffer.h">
+      <Filter>소스 파일\00.Engine\Pipeline\01.InputAssembler</Filter>
+    </ClInclude>
+    <ClInclude Include="Geometry.h">
+      <Filter>소스 파일\00.Engine\Pipeline\00.Geometry</Filter>
+    </ClInclude>
+    <ClInclude Include="GeometryHelper.h">
+      <Filter>소스 파일\00.Engine\Pipeline\00.Geometry</Filter>
+    </ClInclude>
+    <ClInclude Include="VertexData.h">
+      <Filter>소스 파일\00.Engine\Pipeline\00.Geometry</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="GameCoding.rc">
@@ -116,6 +134,24 @@
     </ClCompile>
     <ClCompile Include="Graphics.cpp">
       <Filter>소스 파일\00.Engine\Pipeline</Filter>
+    </ClCompile>
+    <ClCompile Include="IndexBuffer.cpp">
+      <Filter>소스 파일\00.Engine\Pipeline\01.InputAssembler</Filter>
+    </ClCompile>
+    <ClCompile Include="InputLayout.cpp">
+      <Filter>소스 파일\00.Engine\Pipeline\01.InputAssembler</Filter>
+    </ClCompile>
+    <ClCompile Include="VertexBuffer.cpp">
+      <Filter>소스 파일\00.Engine\Pipeline\01.InputAssembler</Filter>
+    </ClCompile>
+    <ClCompile Include="Geometry.cpp">
+      <Filter>소스 파일\00.Engine\Pipeline\00.Geometry</Filter>
+    </ClCompile>
+    <ClCompile Include="GeometryHelper.cpp">
+      <Filter>소스 파일\00.Engine\Pipeline\00.Geometry</Filter>
+    </ClCompile>
+    <ClCompile Include="VertexData.cpp">
+      <Filter>소스 파일\00.Engine\Pipeline\00.Geometry</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
