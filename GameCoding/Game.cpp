@@ -19,18 +19,39 @@ void Game::Init(HWND hWnd)
 	_indexBuffer	= make_shared<IndexBuffer>(_graphcis->GetDevice());
 	_inputLayout	= make_shared<InputLayout>(_graphcis->GetDevice());
 	_geometry		= make_shared<Geometry<VertexTextureData>>();
+	_vertexShader	= make_shared<VertexShader>(_graphcis->GetDevice());
+	_pixelShader	= make_shared<PixelShader>(_graphcis->GetDevice());
+	_constantBuffer = make_shared<ConstantBuffer<TransformData>>(_graphcis->GetDevice(), _graphcis->GetDeviceContext());
+	_texture1		= make_shared<Texture>(_graphcis->GetDevice());
+
+	// Geometry
+	{
+		// Vertex Data
+		GeometryHelper::CreateRectangle(_geometry);
+
+		// VertexBuffer
+		_vertexBuffer->CreateVertexBuffer(_geometry->GetVertices());
+
+		// IndexBuffer
+		_indexBuffer->CreateIndexBuffer(_geometry->GetIndices());
+	}
 	
-	CreateGeometry();		// VertextBuffer GPU에게 건내줌
-	CreateVS();				// Vertex Shader 생성
-	CreateInputLayout();	// InputLayout 생성
-	CreatePS();				// Pixel Shader 생성
+	// Shader
+	{
+		_vertexShader->Create(L"Default.hlsl", "VS", "vs_5_0");
+		_inputLayout->CraeteInputLayout(VertexTextureData::descs, _vertexShader->GetBlob());
+		_pixelShader->Create(L"Default.hlsl", "PS", "ps_5_0");
+	}
 
 	CreateRasterizerState(); // Rasterizer State
 	CreateSamplerState();
 	CreateBlendState();
 
-	CreateSRV();			// Shader Resouce View로드 및 생성
-	CreateConstantBuffer(); // Constant Buffer
+	// SRV
+	{
+		_texture1->Create(L"BFS.jpg");
+	}
+	_constantBuffer->Create(); // ConstantBuffer Create
 }
 
 void Game::Update()
@@ -46,12 +67,8 @@ void Game::Update()
 	Matrix matWorld = matScale * matRotation * matTranslation; // SRT 행렬
 	_transformData.matWorld = matWorld;   
 
-	D3D11_MAPPED_SUBRESOURCE subResouce;
-	Z(&subResouce, sizeof(subResouce));
-
-	_graphcis->GetDeviceContext()->Map(_constantBuffer.Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &subResouce); // open
-	::memcpy(subResouce.pData, &_transformData, sizeof(_transformData)); // CPU -> GPU로 데이터가 복사
-	_graphcis->GetDeviceContext()->Unmap(_constantBuffer.Get(), 0); // close
+	// CPU -> GPU로의 데이터 복사
+	_constantBuffer->CopyData(_transformData);
 }
 
 void Game::Render()
@@ -73,15 +90,15 @@ void Game::Render()
 		DC->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
 		// VS
-		DC->VSSetShader(_vertexShader.Get(), nullptr, 0);
-		DC->VSSetConstantBuffers(0, 1, _constantBuffer.GetAddressOf());
+		DC->VSSetShader(_vertexShader->GetComPtr().Get(), nullptr, 0);
+		DC->VSSetConstantBuffers(0, 1, _constantBuffer->GetComPtr().GetAddressOf());
 
 		// RS
 		DC->RSSetState(_rasterizerState.Get());
 
 		// PS
-		DC->PSSetShader(_pixelShader.Get(), nullptr, 0);
-		DC->PSSetShaderResources(0, 1, _shaderResourceView.GetAddressOf());
+		DC->PSSetShader(_pixelShader->GetComPtr().Get(), nullptr, 0);
+		DC->PSSetShaderResources(0, 1, _texture1->GetComPtr().GetAddressOf());
 		DC->PSSetSamplers(0, 1, _samplerState.GetAddressOf()); // sampler state
 		
 		// OM
@@ -91,55 +108,6 @@ void Game::Render()
 	}
 
 	_graphcis->RenderEnd();
-}
-
-void Game::CreateGeometry()
-{
-	// Vertex Data
-	GeometryHelper::CreateRectangle(_geometry);
-	
-	// VertexBuffer
-	_vertexBuffer->CreateVertexBuffer(_geometry->GetVertices());
-	
-	// IndexBuffer
-	_indexBuffer->CreateIndexBuffer(_geometry->GetIndices());
-}
-
-// 데이터를 어떻게 읽어야 할지 알려달라. 그래서 GPU에게 알려주는 함수
-void Game::CreateInputLayout()
-{
-	// Struct.h의 Vertex가 어떻게 되어 있는지 묘사하는 부분
-	_inputLayout->CraeteInputLayout(VertexTextureData::descs, _vsBlob);
-}
-
-void Game::CreateVS()
-{
-	// VS만들어 버림.
-	LoadShaderFromFile(L"Default.hlsl", "VS", "vs_5_0", _vsBlob);
-
-	H hr = _graphcis->GetDevice()->CreateVertexShader
-	(
-		_vsBlob->GetBufferPointer(),
-		_vsBlob->GetBufferSize(), 
-		nullptr,
-		_vertexShader.GetAddressOf()
-	);
-	C(hr);
-}
-
-void Game::CreatePS()
-{
-	// VS만들어 버려엇
-	LoadShaderFromFile(L"Default.hlsl", "PS", "ps_5_0", _psBlob);
-
-	H hr = _graphcis->GetDevice()->CreatePixelShader
-	(
-		_psBlob->GetBufferPointer(),
-		_psBlob->GetBufferSize(),
-		nullptr,
-		_pixelShader.GetAddressOf()
-	);
-	C(hr);
 }
 
 void Game::CreateRasterizerState()
@@ -196,53 +164,5 @@ void Game::CreateBlendState()
 	desc.RenderTarget[0].RenderTargetWriteMask = D3D11_COLOR_WRITE_ENABLE_ALL;
 
 	H hr = _graphcis->GetDevice()->CreateBlendState(&desc, _blendState.GetAddressOf());
-	C(hr);
-}
-
-void Game::CreateSRV()
-{
-	DirectX::TexMetadata md;
-	DirectX::ScratchImage img;
-	H hr = ::LoadFromWICFile(L"BFS.jpg", WIC_FLAGS_NONE, &md, img);
-	C(hr);
-
-	hr = ::CreateShaderResourceView
-	(
-		_graphcis->GetDevice().Get(), img.GetImages(), img.GetImageCount(),
-		md, _shaderResourceView.GetAddressOf()
-	);
-	C(hr);
-}
-
-void Game::CreateConstantBuffer()
-{
-	D3D11_BUFFER_DESC desc;
-	Z(&desc, sizeof(desc));
-	desc.Usage = D3D11_USAGE_DYNAMIC; // CPU_Write+ GPU_Read
-	desc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
-	desc.ByteWidth = sizeof(TransformData);
-	desc.CPUAccessFlags = D3D10_CPU_ACCESS_WRITE;
-	
-	H hr = _graphcis->GetDevice()->CreateBuffer(&desc, nullptr, _constantBuffer.GetAddressOf());
-	C(hr);
-}
-
-void Game::LoadShaderFromFile(const wstring& path, const string& name, const string& version, ComPtr<ID3DBlob>& blob)
-{
-	const uint32 compileFlag = D3DCOMPILE_DEBUG | D3DCOMPILE_SKIP_OPTIMIZATION;
-
-	// d3dcompiler.h에서
-	H hr = ::D3DCompileFromFile
-	(
-		path.c_str(),
-		nullptr,
-		D3D_COMPILE_STANDARD_FILE_INCLUDE,
-		name.c_str(),
-		version.c_str(),
-		compileFlag,
-		0,
-		blob.GetAddressOf(),
-		nullptr
-	);
 	C(hr);
 }
