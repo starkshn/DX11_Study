@@ -18,6 +18,7 @@ void Game::Init(HWND hWnd)
 	_vertexBuffer	= make_shared<VertexBuffer>(_graphcis->GetDevice());
 	_indexBuffer	= make_shared<IndexBuffer>(_graphcis->GetDevice());
 	_inputLayout	= make_shared<InputLayout>(_graphcis->GetDevice());
+	_geometry		= make_shared<Geometry<VertexTextureData>>();
 	
 	CreateGeometry();		// VertextBuffer GPU에게 건내줌
 	CreateVS();				// Vertex Shader 생성
@@ -60,7 +61,7 @@ void Game::Render()
 	// TODO
 	// IA(Input Assembler) - VS(Vertex Shader) - RS - PS(Pixel Shader) - OM(Output)
 	{
-		uint32 stride = sizeof(Vertex);
+		uint32 stride = sizeof(VertexTextureData);
 		uint32 offset = 0;
 
 		auto DC = _graphcis->GetDeviceContext();
@@ -86,7 +87,7 @@ void Game::Render()
 		// OM
 		DC->OMSetBlendState(_blendState.Get(), nullptr, 0xFFFFFFFF);
 
-		DC->DrawIndexed(_indices.size(), 0, 0);
+		DC->DrawIndexed(_geometry->GetIndexCount(), 0, 0);
 	}
 
 	_graphcis->RenderEnd();
@@ -95,52 +96,20 @@ void Game::Render()
 void Game::CreateGeometry()
 {
 	// Vertex Data
-	{
-		// 13
-		// 02
-		_vertices.resize(4);
-
-		_vertices[0].position = Vec3(-0.5f, -0.5f, 0.0f);
-		_vertices[0].uv = Vec2(0.f, 1.f);
-
-		_vertices[1].position = Vec3(-0.5f, 0.5f, 0.f);
-		_vertices[1].uv = Vec2(0.f, 0.f);
-
-		_vertices[2].position = Vec3(0.5f, -0.5f, 0.f);
-		_vertices[2].uv = Vec2(1.f, 1.f);
-
-		_vertices[3].position = Vec3(0.5f, 0.5f, 0.f);
-		_vertices[3].uv = Vec2(1.f, 0.f);
-	}
-
+	GeometryHelper::CreateRectangle(_geometry);
+	
 	// VertexBuffer
-	{
-		_vertexBuffer->CreateVertexBuffer(_vertices);
-	}
-
-
-	// Index
-	{
-		_indices = {0, 1, 2, 2, 1, 3};
-	}
-
+	_vertexBuffer->CreateVertexBuffer(_geometry->GetVertices());
+	
 	// IndexBuffer
-	{
-		_indexBuffer->CreateIndexBuffer(_indices);
-	};
+	_indexBuffer->CreateIndexBuffer(_geometry->GetIndices());
 }
 
 // 데이터를 어떻게 읽어야 할지 알려달라. 그래서 GPU에게 알려주는 함수
 void Game::CreateInputLayout()
 {
 	// Struct.h의 Vertex가 어떻게 되어 있는지 묘사하는 부분
-	vector<D3D11_INPUT_ELEMENT_DESC> layout
-	{
-		{"POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0},
-		{"TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, 12, D3D11_INPUT_PER_VERTEX_DATA, 0},
-	};
-
-	_inputLayout->CraeteInputLayout(layout, _vsBlob);
+	_inputLayout->CraeteInputLayout(VertexTextureData::descs, _vsBlob);
 }
 
 void Game::CreateVS()

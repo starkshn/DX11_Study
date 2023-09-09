@@ -40,28 +40,21 @@ private:
 
 private:
 	// Geometry
-	// VertexBuffer
-	vector<Vertex>						_vertices;
-	shared_ptr<VertexBuffer>			_vertexBuffer = nullptr;
-
-	// IndexBuffer
-	vector<uint32>						_indices;
-	shared_ptr<IndexBuffer>				_indexBuffer = nullptr;
+	shared_ptr<Geometry<VertexTextureData>> _geometry;
+	shared_ptr<VertexBuffer>				_vertexBuffer;
+	shared_ptr<IndexBuffer>					_indexBuffer;
+	shared_ptr<InputLayout>					_inputLayout;
 
 private:
-	shared_ptr<InputLayout>				_inputLayout = nullptr;
-
-	// Shader Load
 	// VS
-	ComPtr<ID3D11VertexShader>			_vertexShader = nullptr; // vertex shader
+	ComPtr<ID3D11VertexShader>			_vertexShader = nullptr; 
 	ComPtr<ID3DBlob>					_vsBlob = nullptr;				
-
-	// RAS
+	// RS
 	ComPtr<ID3D11RasterizerState>		_rasterizerState = nullptr;
 
 	// PS
-	ComPtr<ID3D11PixelShader>			_pixelShader = nullptr;	// pixel shader
-	ComPtr<ID3DBlob>					_psBlob = nullptr;					// blob
+	ComPtr<ID3D11PixelShader>			_pixelShader = nullptr;
+	ComPtr<ID3DBlob>					_psBlob = nullptr;
 
 	// SRV
 	ComPtr<ID3D11ShaderResourceView>	_shaderResourceView = nullptr;
