@@ -11,12 +11,6 @@ public:
 	void Render();
 
 private:
-	// »ó´ëÀûÀ¸·Î ´ú Áß¿äÇÑ »ïÃÑ»ç
-	void CreateRasterizerState();
-	void CreateSamplerState();		// »ùÇÃ¸µÀ» ÇÑ´Ù.
-	void CreateBlendState();
-
-private:
 	HWND								_hWnd;
 
 private:
@@ -30,7 +24,7 @@ private:
 	shared_ptr<InputLayout>					_inputLayout;
 
 	shared_ptr<VertexShader>				_vertexShader;
-	ComPtr<ID3D11RasterizerState>			_rasterizerState;
+	shared_ptr<RasterizerState>				_rasterizerState;
 	shared_ptr<PixelShader>					_pixelShader;
 
 	shared_ptr<Texture>						_texture1;
@@ -40,8 +34,8 @@ private:
 	shared_ptr<ConstantBuffer<TransformData>>	_constantBuffer;
 
 private:
-	ComPtr<ID3D11SamplerState>			_samplerState;
-	ComPtr<ID3D11BlendState>			_blendState;
+	shared_ptr<SamplerState>				_samplerState;
+	shared_ptr<BlendState>					_blendState;
 
 private:
 	Vec3 _localPosition = {0.f, 0.f, 0.f};

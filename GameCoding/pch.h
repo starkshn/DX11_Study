@@ -63,3 +63,6 @@ using namespace Microsoft::WRL;
 #include "Shader.h"
 #include "ConstantBuffer.h"
 #include "Texture.h"
+#include "RasterizerState.h"
+#include "SamplerState.h"
+#include "BlendState.h"

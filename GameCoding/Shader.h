@@ -23,8 +23,8 @@ protected:
 	void LoadShaderFromFile(const wstring& path, const string& name, const string& version);
 
 protected:
-	ComPtr<ID3D11Device>	_device = nullptr;
-	ComPtr<ID3DBlob>		_blob	= nullptr;
+	ComPtr<ID3D11Device>	_device;
+	ComPtr<ID3DBlob>		_blob;
 
 	wstring		_path;
 	string		_name;
