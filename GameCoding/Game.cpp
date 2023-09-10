@@ -15,6 +15,8 @@ void Game::Init(HWND hWnd)
 {
 	_hWnd			= hWnd;
 	_graphcis		= make_shared<Graphics>(hWnd);
+	_pipeline		= make_shared<Pipeline>(_graphcis->GetDeviceContext());
+
 	_vertexBuffer	= make_shared<VertexBuffer>(_graphcis->GetDevice());
 	_indexBuffer	= make_shared<IndexBuffer>(_graphcis->GetDevice());
 	_inputLayout	= make_shared<InputLayout>(_graphcis->GetDevice());
@@ -82,36 +84,37 @@ void Game::Render()
 {
 	_graphcis->RenderBegin();
 
-	// TODO
-	// IA(Input Assembler) - VS(Vertex Shader) - RS - PS(Pixel Shader) - OM(Output)
 	{
+		PipelineInfo info;
+		info.inputLayout = _inputLayout;
+		info.vertexShader = _vertexShader;
+		info.pixelShader = _pixelShader;
+		info.rasterizerState = _rasterizerState;
+		info.blendState = _blendState;
+		info.topology = D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
+
+		_pipeline->UpdatePipeline(info);
+
 		uint32 stride = sizeof(VertexTextureData);
 		uint32 offset = 0;
 
 		auto DC = _graphcis->GetDeviceContext();
 
 		// IA
-		DC->IASetVertexBuffers(0, 1, _vertexBuffer->GetComPtr().GetAddressOf(), &stride, &offset); // 1. vertex buffer
-		DC->IASetIndexBuffer(_indexBuffer->GetComPtr().Get(), DXGI_FORMAT_R32_UINT, 0); // 2. index buffer
-		DC->IASetInputLayout(_inputLayout->GetComPtr().Get()); 		// 3. Input Layout
-		DC->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+		_pipeline->SetVertexBuffer(_vertexBuffer);
+		_pipeline->SetIndexBuffer(_indexBuffer);
 
 		// VS
-		DC->VSSetShader(_vertexShader->GetComPtr().Get(), nullptr, 0);
-		DC->VSSetConstantBuffers(0, 1, _constantBuffer->GetComPtr().GetAddressOf());
-
+		_pipeline->SetConstantBuffer(0, SS_VertexShader, _constantBuffer);
+		
 		// RS
-		DC->RSSetState(_rasterizerState->GetComPtr().Get());
-
+		
 		// PS
-		DC->PSSetShader(_pixelShader->GetComPtr().Get(), nullptr, 0);
-		DC->PSSetShaderResources(0, 1, _texture1->GetComPtr().GetAddressOf());
-		DC->PSSetSamplers(0, 1, _samplerState->GetComPtr().GetAddressOf()); // sampler state
+		_pipeline->SetTexture(0, SS_PixelShader, _texture1);
+		_pipeline->SetSamplerState(0, SS_PixelShader, _samplerState);
 		
 		// OM
-		DC->OMSetBlendState(_blendState->GetComPtr().Get(), _blendState->GetBlendFactor(), _blendState->GetSampleMask());
-
-		DC->DrawIndexed(_geometry->GetIndexCount(), 0, 0);
+		_pipeline->DrawIndexed(_geometry->GetIndexCount(), 0, 0);
 	}
 
 	_graphcis->RenderEnd();

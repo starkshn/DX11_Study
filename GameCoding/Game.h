@@ -15,6 +15,7 @@ private:
 
 private:
 	shared_ptr<Graphics>				_graphcis;
+	shared_ptr<Pipeline>				_pipeline;
 
 private:
 	// Geometry

@@ -123,6 +123,9 @@
     <ClInclude Include="BlendState.h">
       <Filter>소스 파일\00.Engine\Pipeline\05.OutputMerger</Filter>
     </ClInclude>
+    <ClInclude Include="Pipeline.h">
+      <Filter>소스 파일\00.Engine\Pipeline</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="GameCoding.rc">
@@ -188,6 +191,9 @@
     </ClCompile>
     <ClCompile Include="BlendState.cpp">
       <Filter>소스 파일\00.Engine\Pipeline\05.OutputMerger</Filter>
+    </ClCompile>
+    <ClCompile Include="Pipeline.cpp">
+      <Filter>소스 파일\00.Engine\Pipeline</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
