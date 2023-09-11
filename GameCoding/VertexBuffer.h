@@ -12,7 +12,7 @@ public:
 	uint32 GetCount()					{ return _count; }
 			
 	template <typename T>
-	void CreateVertexBuffer(const vector<T>& vertices)
+	void Create(const vector<T>& vertices)
 	{
 		_stride = sizeof(T);
 		_count = static_cast<uint32>(vertices.size());
