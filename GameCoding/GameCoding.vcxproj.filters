@@ -55,6 +55,9 @@
     <Filter Include="소스 파일\00.Engine\GameObject">
       <UniqueIdentifier>{9eca1651-9d81-4274-a357-92d1bf3f51f2}</UniqueIdentifier>
     </Filter>
+    <Filter Include="소스 파일\00.Engine\Component">
+      <UniqueIdentifier>{99a3f048-db0a-49c9-b97b-5c2e30c6950c}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h">
@@ -132,6 +135,12 @@
     <ClInclude Include="GameObject.h">
       <Filter>소스 파일\00.Engine\GameObject</Filter>
     </ClInclude>
+    <ClInclude Include="Component.h">
+      <Filter>소스 파일\00.Engine\Component</Filter>
+    </ClInclude>
+    <ClInclude Include="Transform.h">
+      <Filter>소스 파일\00.Engine\Component</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="GameCoding.rc">
@@ -203,6 +212,12 @@
     </ClCompile>
     <ClCompile Include="GameObject.cpp">
       <Filter>소스 파일\00.Engine\GameObject</Filter>
+    </ClCompile>
+    <ClCompile Include="Component.cpp">
+      <Filter>소스 파일\00.Engine\Component</Filter>
+    </ClCompile>
+    <ClCompile Include="Transform.cpp">
+      <Filter>소스 파일\00.Engine\Component</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
