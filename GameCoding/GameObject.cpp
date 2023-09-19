@@ -74,6 +74,13 @@ GameObject::GameObject(ComPtr<ID3D11Device> device, ComPtr<ID3D11DeviceContext> 
 
 		_samplerState = make_shared<SamplerState>(_device);
 		_samplerState->Create();
+
+	}
+
+	{
+		// Test
+		//_parent->AddChild(_transform);
+		//_transform->SetParent(_parent);
 	}
 	_option = option;
 }
@@ -84,16 +91,19 @@ GameObject::~GameObject()
 
 void GameObject::Update()
 {
-	_localPosition.x += 0.001f;
+	/*Vec3 pos = _parent->GetPosition();
+	pos.x += 0.001f;
+	_parent->SetPosition(pos);*/
 
-	// SRT
-	Matrix matScale = Matrix::CreateScale(_localScale / 3);
-	Matrix matRotation = Matrix::CreateRotationX(_localRotation.x);
-	matRotation *= Matrix::CreateRotationY(_localRotation.y);
-	matRotation *= Matrix::CreateRotationZ(_localRotation.z);
-	Matrix matTranslation = Matrix::CreateTranslation(_localPosition);
-	Matrix matWorld = matScale * matRotation * matTranslation; // SRT 행렬
-	_transformData.matWorld = matWorld;
+	/*Vec3 pos = _transform->GetPosition();
+	pos.x += 0.001f;
+	_transform->SetPosition(pos);*/
+	
+	Vec3 rot = _transform->GetRotation();
+	rot.z += 0.01f;
+	_transform->SetRotation(rot);
+
+	_transformData.matWorld = _transform->GetWorldMatrix();
 
 	// CPU -> GPU로의 데이터 복사
 	_constantBuffer->CopyData(_transformData);
