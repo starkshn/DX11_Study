@@ -1,5 +1,8 @@
 #include "pch.h"
 #include "GameObject.h"
+#include "MonoBehavior.h"
+#include "Transform.h"
+
 
 GameObject::GameObject(ComPtr<ID3D11Device> device, ComPtr<ID3D11DeviceContext> deviceContext, bool option)
 	:
@@ -74,13 +77,10 @@ GameObject::GameObject(ComPtr<ID3D11Device> device, ComPtr<ID3D11DeviceContext> 
 
 		_samplerState = make_shared<SamplerState>(_device);
 		_samplerState->Create();
-
 	}
 
 	{
-		// Test
-		//_parent->AddChild(_transform);
-		//_transform->SetParent(_parent);
+		
 	}
 	_option = option;
 }
@@ -89,24 +89,92 @@ GameObject::~GameObject()
 {
 }
 
+void GameObject::Awake()
+{
+	for (shared_ptr<Component>& component : _components)
+	{
+		component->Awake();
+	}
+
+	for (shared_ptr<MonoBehavior>& script : _scripts)
+	{
+		script->Awake();
+	}
+}
+
+void GameObject::Start()
+{
+	for (shared_ptr<Component>& component : _components)
+	{
+		component->Start();
+	}
+
+	for (shared_ptr<MonoBehavior>& script : _scripts)
+	{
+		script->Start();
+	}
+}
+
 void GameObject::Update()
 {
-	/*Vec3 pos = _parent->GetPosition();
-	pos.x += 0.001f;
-	_parent->SetPosition(pos);*/
+	for (shared_ptr<Component>& component : _components)
+	{
+		component->Update();
+	}
 
-	/*Vec3 pos = _transform->GetPosition();
-	pos.x += 0.001f;
-	_transform->SetPosition(pos);*/
-	
-	Vec3 rot = _transform->GetRotation();
-	rot.z += 0.01f;
-	_transform->SetRotation(rot);
+	for (shared_ptr<MonoBehavior>& script : _scripts)
+	{
+		script->Update();
+	}
 
 	_transformData.matWorld = _transform->GetWorldMatrix();
 
 	// CPU -> GPU로의 데이터 복사
 	_constantBuffer->CopyData(_transformData);
+}
+
+void GameObject::LateUpdate()
+{
+	for (shared_ptr<Component>& component : _components)
+	{
+		component->LateUpdate();
+	}
+
+	for (shared_ptr<MonoBehavior>& script : _scripts)
+	{
+		script->LateUpdate();
+	}
+}
+
+void GameObject::FixedUpdate()
+{
+	for (shared_ptr<Component>& component : _components)
+	{
+		component->FixedUpdate();
+	}
+
+	for (shared_ptr<MonoBehavior>& script : _scripts)
+	{
+		script->FixedUpdate();
+	}
+}
+
+shared_ptr<Component> GameObject::GetFixedComponent(ComponentType type)
+{
+	uint8 index = static_cast<uint8>(type);
+	assert(index < FIXED_COMPONENT_COUNT);
+	return _components[index];
+}
+
+shared_ptr<Transform> GameObject::GetTransform()
+{
+	shared_ptr<Component> comp = GetFixedComponent(ComponentType::Transform);
+	return static_pointer_cast<Transform>(comp);
+}
+
+void GameObject::AddComponent(shared_ptr<Component> comp)
+{
+	comp->SetGameObject(shared_from_this());
 }
 
 void GameObject::Render(shared_ptr<Pipeline> pipeline)
